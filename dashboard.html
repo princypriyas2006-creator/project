@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard — StyleSense</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        beige: { 50: '#FAF7F4', 100: '#F5F0EB', 200: '#EDE5DB', 300: '#DFD3C3' },
+                        charcoal: { 900: '#1A1A1A', 800: '#2D2D2D', 700: '#3D3D3D', 600: '#555' },
+                        blush: { 100: '#FFF0F0', 200: '#FCDEDE', 300: '#F4C2C2', 400: '#E8A0A0', 500: '#D4787B' },
+                    },
+                    fontFamily: { display: ['Playfair Display', 'serif'], body: ['Inter', 'sans-serif'] },
+                },
+            },
+        }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap"
+        rel="stylesheet" />
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #FAF7F4;
+            color: #1A1A1A;
+            margin: 0;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+
+        .card-hover {
+            transition: all 0.35s cubic-bezier(.25, .8, .25, 1);
+        }
+
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 16px 40px rgba(26, 26, 26, 0.08);
+        }
+
+        .text-gradient {
+            background: linear-gradient(135deg, #1A1A1A 0%, #D4787B 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #F5F0EB;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #DFD3C3;
+            border-radius: 3px;
+        }
+
+        @keyframes fadeUp {
+            0% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .anim-up {
+            animation: fadeUp 0.6s ease-out forwards;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        const Icon = ({ name, size = 24, className = '' }) => {
+            const ref = useRef(null);
+            useEffect(() => {
+                if (ref.current && lucide.icons[name]) {
+                    ref.current.innerHTML = '';
+                    lucide.createElement(lucide.icons[name]).childNodes.forEach(n => ref.current.appendChild(n.cloneNode(true)));
+                }
+            }, [name]);
+            return <svg ref={ref} width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />;
+        };
+
+        /* ───── Sidebar ───── */
+        function Sidebar({ active, setActive, user, collapsed, setCollapsed }) {
+            const items = [
+                { id: 'overview', icon: 'LayoutDashboard', label: 'Overview' },
+                { id: 'outfits', icon: 'Shirt', label: 'My Outfits' },
+                { id: 'wardrobe', icon: 'LayoutGrid', label: 'Wardrobe' },
+                { id: 'trends', icon: 'TrendingUp', label: 'Trends' },
+                { id: 'bodytype', icon: 'ScanLine', label: 'Body Profile' },
+                { id: 'settings', icon: 'Settings', label: 'Settings' },
+            ];
+            return (
+                <aside className={`fixed top-0 left-0 h-full bg-charcoal-900 text-white transition-all duration-300 z-40 flex flex-col ${collapsed ? 'w-[72px]' : 'w-64'}`}>
+                    {/* Logo */}
+                    <div className="flex items-center gap-3 px-5 py-6 border-b border-white/10">
+                        <div className="w-9 h-9 rounded-xl bg-blush-300 flex items-center justify-center shrink-0">
+                            <Icon name="Sparkles" size={18} className="text-charcoal-900" />
+                        </div>
+                        {!collapsed && <span className="font-display text-lg font-bold tracking-tight">StyleSense</span>}
+                    </div>
+
+                    {/* Nav */}
+                    <nav className="flex-1 py-4 px-3 space-y-1">
+                        {items.map(it => (
+                            <button key={it.id} onClick={() => setActive(it.id)}
+                                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200
+                  ${active === it.id ? 'bg-white/10 text-blush-300' : 'text-white/50 hover:text-white hover:bg-white/5'}`}>
+                                <Icon name={it.icon} size={20} className="shrink-0" />
+                                {!collapsed && <span>{it.label}</span>}
+                            </button>
+                        ))}
+                    </nav>
+
+                    {/* Collapse toggle */}
+                    <button onClick={() => setCollapsed(!collapsed)} className="mx-3 mb-3 flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-white/40 hover:text-white hover:bg-white/5 transition-colors text-sm">
+                        <Icon name={collapsed ? 'ChevronsRight' : 'ChevronsLeft'} size={18} />
+                        {!collapsed && <span>Collapse</span>}
+                    </button>
+
+                    {/* User */}
+                    <div className="border-t border-white/10 px-4 py-4 flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-full bg-blush-300/20 flex items-center justify-center text-blush-300 font-bold text-sm shrink-0">
+                            {user?.name?.charAt(0)?.toUpperCase() || 'U'}
+                        </div>
+                        {!collapsed && (
+                            <div className="min-w-0">
+                                <p className="text-sm font-semibold truncate">{user?.name || 'User'}</p>
+                                <p className="text-[11px] text-white/40 truncate">{user?.email || ''}</p>
+                            </div>
+                        )}
+                    </div>
+                </aside>
+            );
+        }
+
+        /* ───── Top Bar ───── */
+        function TopBar({ user, collapsed }) {
+            const handleLogout = async () => {
+                await fetch('/api/logout', { method: 'POST' });
+                document.cookie = 'token=; Max-Age=0; path=/;';
+                window.location.href = '/';
+            };
+            return (
+                <header className={`fixed top-0 right-0 z-30 h-16 glass shadow-sm flex items-center justify-between px-6 transition-all duration-300 ${collapsed ? 'left-[72px]' : 'left-64'}`}>
+                    <div>
+                        <h1 className="text-lg font-semibold">Welcome back, <span className="text-gradient">{user?.name?.split(' ')[0] || 'there'}</span> 👋</h1>
+                    </div>
+                    <div className="flex items-center gap-4">
+                        <button className="relative p-2 rounded-xl hover:bg-beige-200 transition-colors">
+                            <Icon name="Bell" size={20} className="text-charcoal-700" />
+                            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-blush-500"></span>
+                        </button>
+                        <button onClick={handleLogout} className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-charcoal-700 hover:bg-red-50 hover:text-red-600 transition-all">
+                            <Icon name="LogOut" size={16} /> Logout
+                        </button>
+                    </div>
+                </header>
+            );
+        }
+
+        /* ───── Stat Card ───── */
+        function StatCard({ icon, label, value, change, color, delay }) {
+            return (
+                <div className="glass rounded-2xl p-6 card-hover anim-up" style={{ animationDelay: `${delay}s` }}>
+                    <div className="flex items-center justify-between mb-4">
+                        <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${color}`}>
+                            <Icon name={icon} size={20} className="text-white" />
+                        </div>
+                        <span className={`text-xs font-semibold px-2 py-1 rounded-full ${change > 0 ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-500'}`}>
+                            {change > 0 ? '+' : ''}{change}%
+                        </span>
+                    </div>
+                    <p className="text-2xl font-bold font-display">{value}</p>
+                    <p className="text-xs text-charcoal-600 mt-1">{label}</p>
+                </div>
+            );
+        }
+
+        /* ───── Outfit Card ───── */
+        function OutfitCard({ title, items, score, occasion, delay }) {
+            const emojis = { 'Casual': '👕', 'Formal': '👔', 'Party': '🎉', 'Date Night': '💃', 'Work': '💼', 'Brunch': '🥂' };
+            return (
+                <div className="glass rounded-2xl p-5 card-hover anim-up" style={{ animationDelay: `${delay}s` }}>
+                    <div className="flex items-center justify-between mb-3">
+                        <span className="text-2xl">{emojis[occasion] || '👗'}</span>
+                        <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-blush-100 text-blush-500">{score}% match</span>
+                    </div>
+                    <h4 className="font-display font-semibold text-base mb-1">{title}</h4>
+                    <p className="text-xs text-charcoal-600 mb-3">{occasion}</p>
+                    <div className="flex flex-wrap gap-1.5">
+                        {items.map((it, i) => (
+                            <span key={i} className="text-[11px] px-2 py-1 rounded-lg bg-beige-200/60 text-charcoal-700">{it}</span>
+                        ))}
+                    </div>
+                </div>
+            );
+        }
+
+        /* ───── Trend Item ───── */
+        function TrendItem({ name, change, category, delay }) {
+            return (
+                <div className="flex items-center justify-between py-3 border-b border-beige-200/60 last:border-0 anim-up" style={{ animationDelay: `${delay}s` }}>
+                    <div>
+                        <p className="text-sm font-medium">{name}</p>
+                        <p className="text-[11px] text-charcoal-600">{category}</p>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                        <Icon name={change > 0 ? 'TrendingUp' : 'TrendingDown'} size={14} className={change > 0 ? 'text-green-500' : 'text-red-400'} />
+                        <span className={`text-xs font-semibold ${change > 0 ? 'text-green-600' : 'text-red-500'}`}>{change > 0 ? '+' : ''}{change}%</span>
+                    </div>
+                </div>
+            );
+        }
+
+        /* ───── Overview Page ───── */
+        function OverviewPage({ user }) {
+            const outfits = [
+                { title: 'Minimalist Monday', items: ['White Tee', 'Beige Trousers', 'Loafers'], score: 96, occasion: 'Work' },
+                { title: 'Evening Elegance', items: ['Black Blazer', 'Silk Top', 'Heels', 'Clutch'], score: 93, occasion: 'Date Night' },
+                { title: 'Weekend Vibes', items: ['Denim Jacket', 'Sundress', 'Sneakers'], score: 89, occasion: 'Casual' },
+                { title: 'Brunch Ready', items: ['Linen Shirt', 'Midi Skirt', 'Sandals'], score: 91, occasion: 'Brunch' },
+            ];
+            const trends = [
+                { name: 'Quiet Luxury', change: 24, category: 'Aesthetic' },
+                { name: 'Wide-Leg Trousers', change: 18, category: 'Bottoms' },
+                { name: 'Sheer Fabrics', change: 15, category: 'Textures' },
+                { name: 'Cherry Red', change: 12, category: 'Colors' },
+                { name: 'Oversized Blazers', change: -3, category: 'Outerwear' },
+            ];
+
+            return (
+                <div className="space-y-8">
+                    {/* Stats */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                        <StatCard icon="Shirt" label="Outfits Generated" value="247" change={12} color="bg-charcoal-900" delay={0.1} />
+                        <StatCard icon="LayoutGrid" label="Wardrobe Items" value="84" change={5} color="bg-blush-400" delay={0.2} />
+                        <StatCard icon="TrendingUp" label="Trend Score" value="92%" change={8} color="bg-gradient-to-br from-blush-300 to-blush-500" delay={0.3} />
+                        <StatCard icon="Heart" label="Saved Looks" value="38" change={-2} color="bg-charcoal-800" delay={0.4} />
+                    </div>
+
+                    <div className="grid lg:grid-cols-3 gap-6">
+                        {/* Outfits */}
+                        <div className="lg:col-span-2">
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="font-display text-xl font-semibold">Today's Recommendations</h3>
+                                <button className="text-xs font-medium text-blush-500 hover:underline">View All</button>
+                            </div>
+                            <div className="grid sm:grid-cols-2 gap-4">
+                                {outfits.map((o, i) => <OutfitCard key={i} {...o} delay={0.15 * i} />)}
+                            </div>
+                        </div>
+
+                        {/* Trends */}
+                        <div>
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="font-display text-xl font-semibold">Trending Now</h3>
+                                <button className="text-xs font-medium text-blush-500 hover:underline">See All</button>
+                            </div>
+                            <div className="glass rounded-2xl p-5">
+                                {trends.map((t, i) => <TrendItem key={i} {...t} delay={0.1 * i} />)}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Quick Actions */}
+                    <div>
+                        <h3 className="font-display text-xl font-semibold mb-4">Quick Actions</h3>
+                        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                            {[
+                                { icon: 'Camera', label: 'Scan Outfit', desc: 'Add items via photo' },
+                                { icon: 'Palette', label: 'Style Quiz', desc: 'Refine your profile' },
+                                { icon: 'ShoppingBag', label: 'Shop Picks', desc: 'AI curated shopping' },
+                                { icon: 'Share2', label: 'Share Look', desc: 'Post to community' },
+                            ].map((a, i) => (
+                                <button key={i} className="glass rounded-2xl p-5 text-left card-hover group anim-up" style={{ animationDelay: `${0.1 * i}s` }}>
+                                    <div className="w-10 h-10 rounded-xl bg-beige-200 flex items-center justify-center mb-3 group-hover:bg-charcoal-900 transition-colors">
+                                        <Icon name={a.icon} size={18} className="text-charcoal-900 group-hover:text-white transition-colors" />
+                                    </div>
+                                    <p className="text-sm font-semibold">{a.label}</p>
+                                    <p className="text-[11px] text-charcoal-600 mt-0.5">{a.desc}</p>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        /* ───── Placeholder pages ───── */
+        function PlaceholderPage({ title, icon }) {
+            return (
+                <div className="flex flex-col items-center justify-center h-[60vh] text-center space-y-4 anim-up">
+                    <div className="w-20 h-20 rounded-2xl bg-beige-200 flex items-center justify-center">
+                        <Icon name={icon} size={36} className="text-charcoal-700" />
+                    </div>
+                    <h2 className="font-display text-3xl font-bold">{title}</h2>
+                    <p className="text-charcoal-600 max-w-md">This section is coming soon. We're building something amazing for you.</p>
+                </div>
+            );
+        }
+
+        /* ───── App ───── */
+        function App() {
+            const [user, setUser] = useState(null);
+            const [loading, setLoading] = useState(true);
+            const [active, setActive] = useState('overview');
+            const [collapsed, setCollapsed] = useState(false);
+
+            useEffect(() => {
+                fetch('/api/me', { credentials: 'include' })
+                    .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+                    .then(d => { setUser(d.user); setLoading(false); })
+                    .catch(() => { window.location.href = '/'; });
+            }, []);
+
+            if (loading) return (
+                <div className="min-h-screen flex items-center justify-center bg-beige-50">
+                    <div className="text-center space-y-3">
+                        <div className="w-12 h-12 rounded-2xl bg-charcoal-900 flex items-center justify-center mx-auto animate-pulse">
+                            <Icon name="Sparkles" size={22} className="text-white" />
+                        </div>
+                        <p className="text-sm text-charcoal-600">Loading your style...</p>
+                    </div>
+                </div>
+            );
+
+            const pages = {
+                overview: <OverviewPage user={user} />,
+                outfits: <PlaceholderPage title="My Outfits" icon="Shirt" />,
+                wardrobe: <PlaceholderPage title="Smart Wardrobe" icon="LayoutGrid" />,
+                trends: <PlaceholderPage title="Trend Analysis" icon="TrendingUp" />,
+                bodytype: <PlaceholderPage title="Body Profile" icon="ScanLine" />,
+                settings: <PlaceholderPage title="Settings" icon="Settings" />,
+            };
+
+            return (
+                <div className="min-h-screen bg-beige-50">
+                    <Sidebar active={active} setActive={setActive} user={user} collapsed={collapsed} setCollapsed={setCollapsed} />
+                    <TopBar user={user} collapsed={collapsed} />
+                    <main className={`pt-24 pb-12 px-6 transition-all duration-300 ${collapsed ? 'ml-[72px]' : 'ml-64'}`}>
+                        <div className="max-w-7xl mx-auto">
+                            {pages[active]}
+                        </div>
+                    </main>
+                </div>
+            );
+        }
+
+        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+    </script>
+</body>
+
+</html>

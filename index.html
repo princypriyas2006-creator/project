@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>StyleSense — Discover Your Perfect Style with AI</title>
+    <meta name="description"
+        content="StyleSense is an AI-powered fashion styling assistant that helps you discover your perfect style, build a smart wardrobe, and stay on trend." />
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        beige: { 50: '#FAF7F4', 100: '#F5F0EB', 200: '#EDE5DB', 300: '#DFD3C3' },
+                        charcoal: { 900: '#1A1A1A', 800: '#2D2D2D', 700: '#3D3D3D' },
+                        blush: { 100: '#FFF0F0', 200: '#FCDEDE', 300: '#F4C2C2', 400: '#E8A0A0', 500: '#D4787B' },
+                    },
+                    fontFamily: {
+                        display: ['Playfair Display', 'serif'],
+                        body: ['Inter', 'sans-serif'],
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'fade-up': 'fadeUp 0.8s ease-out forwards',
+                        'fade-in': 'fadeIn 0.6s ease-out forwards',
+                        'pulse-slow': 'pulse 4s ease-in-out infinite',
+                        'slide-in-r': 'slideInRight 0.5s ease-out forwards',
+                    },
+                    keyframes: {
+                        float: { '0%,100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-18px)' } },
+                        fadeUp: { '0%': { opacity: '0', transform: 'translateY(30px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+                        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+                        slideInRight: { '0%': { opacity: '0', transform: 'translateX(40px)' }, '100%': { opacity: '1', transform: 'translateX(0)' } },
+                    },
+                },
+            },
+        }
+    </script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap"
+        rel="stylesheet" />
+
+    <!-- React CDN -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #FAF7F4;
+            color: #1A1A1A;
+            overflow-x: hidden;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.45);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.55);
+        }
+
+        .glass-dark {
+            background: rgba(26, 26, 26, 0.65);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .gradient-hero {
+            background: linear-gradient(135deg, #FAF7F4 0%, #FFF0F0 40%, #FCDEDE 70%, #F5F0EB 100%);
+        }
+
+        .gradient-radial {
+            background: radial-gradient(ellipse at 30% 20%, rgba(244, 194, 194, 0.35) 0%, transparent 60%),
+                radial-gradient(ellipse at 70% 80%, rgba(237, 229, 219, 0.5) 0%, transparent 50%);
+        }
+
+        .card-hover {
+            transition: all 0.4s cubic-bezier(.25, .8, .25, 1);
+        }
+
+        .card-hover:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 24px 48px rgba(26, 26, 26, 0.1);
+        }
+
+        .pricing-popular {
+            position: relative;
+        }
+
+        .pricing-popular::before {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            border-radius: 1.5rem;
+            background: linear-gradient(135deg, #F4C2C2, #1A1A1A, #F4C2C2);
+            z-index: -1;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #F5F0EB;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #DFD3C3;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #F4C2C2;
+        }
+
+        .text-gradient {
+            background: linear-gradient(135deg, #1A1A1A 0%, #D4787B 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: -200% 0;
+            }
+
+            100% {
+                background-position: 200% 0;
+            }
+        }
+
+        .shimmer {
+            background: linear-gradient(90deg, transparent 30%, rgba(244, 194, 194, 0.3) 50%, transparent 70%);
+            background-size: 200% 100%;
+            animation: shimmer 3s infinite;
+        }
+
+        .intersection-animate {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.7s cubic-bezier(.25, .8, .25, 1);
+        }
+
+        .intersection-animate.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        /* ─────────────────────── Intersection Observer Hook ─────────────────────── */
+        function useInView(opts = {}) {
+            const ref = useRef(null);
+            const [visible, setVisible] = useState(false);
+            useEffect(() => {
+                const el = ref.current;
+                if (!el) return;
+                const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) { setVisible(true); obs.unobserve(el); } }, { threshold: 0.15, ...opts });
+                obs.observe(el);
+                return () => obs.disconnect();
+            }, []);
+            return [ref, visible];
+        }
+
+        /* ─────────────────────────── ICON COMPONENTS ────────────────────────────── */
+        const Icon = ({ name, size = 24, className = '' }) => {
+            const ref = useRef(null);
+            useEffect(() => { if (ref.current) { ref.current.innerHTML = ''; lucide.createElement(lucide.icons[name]).childNodes.forEach(n => ref.current.appendChild(n.cloneNode(true))); } }, [name]);
+            return <svg ref={ref} width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />;
+        };
+
+        /* ──────────────────────────── NAVBAR ─────────────────────────────────────── */
+        function Navbar({ onLogin, onSignup }) {
+            const [scrolled, setScrolled] = useState(false);
+            const [mobileOpen, setMobileOpen] = useState(false);
+
+            useEffect(() => {
+                const h = () => setScrolled(window.scrollY > 40);
+                window.addEventListener('scroll', h);
+                return () => window.removeEventListener('scroll', h);
+            }, []);
+
+            const links = [
+                { label: 'Home', href: '#home' },
+                { label: 'Features', href: '#features' },
+                { label: 'Pricing', href: '#pricing' },
+            ];
+
+            return (
+                <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled ? 'glass shadow-lg py-3' : 'py-5 bg-transparent'}`}>
+                    <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
+                        {/* Logo */}
+                        <a href="#home" className="flex items-center gap-2 group">
+                            <div className="w-9 h-9 rounded-xl bg-charcoal-900 flex items-center justify-center group-hover:bg-blush-300 transition-colors duration-300">
+                                <Icon name="Sparkles" size={18} className="text-white" />
+                            </div>
+                            <span className="font-display text-xl font-bold tracking-tight">StyleSense</span>
+                        </a>
+
+                        {/* Desktop Links */}
+                        <div className="hidden md:flex items-center gap-8">
+                            {links.map(l => (
+                                <a key={l.label} href={l.href} className="text-sm font-medium text-charcoal-700 hover:text-blush-500 transition-colors relative after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-[2px] after:bg-blush-300 after:transition-all hover:after:w-full">
+                                    {l.label}
+                                </a>
+                            ))}
+                        </div>
+
+                        {/* Desktop Auth */}
+                        <div className="hidden md:flex items-center gap-4">
+                            <button onClick={onLogin} className="text-sm font-medium text-charcoal-700 hover:text-charcoal-900 transition-colors">Log In</button>
+                            <button onClick={onSignup} className="text-sm font-semibold px-5 py-2.5 rounded-full bg-charcoal-900 text-white hover:bg-blush-400 hover:text-charcoal-900 transition-all duration-300 shadow-lg shadow-charcoal-900/20 hover:shadow-blush-300/40">
+                                Sign Up
+                            </button>
+                        </div>
+
+                        {/* Mobile Burger */}
+                        <button onClick={() => setMobileOpen(!mobileOpen)} className="md:hidden p-2 rounded-lg hover:bg-beige-200 transition-colors" aria-label="Toggle menu">
+                            <Icon name={mobileOpen ? 'X' : 'Menu'} size={22} />
+                        </button>
+                    </div>
+
+                    {/* Mobile Drawer */}
+                    {mobileOpen && (
+                        <div className="md:hidden glass absolute top-full left-0 right-0 animate-fade-in shadow-xl">
+                            <div className="px-6 py-6 space-y-4">
+                                {links.map(l => (
+                                    <a key={l.label} href={l.href} onClick={() => setMobileOpen(false)} className="block text-base font-medium text-charcoal-700 hover:text-blush-500 py-2">{l.label}</a>
+                                ))}
+                                <hr className="border-beige-200" />
+                                <button onClick={() => { setMobileOpen(false); onLogin(); }} className="block w-full text-left text-base font-medium text-charcoal-700 py-2">Log In</button>
+                                <button onClick={() => { setMobileOpen(false); onSignup(); }} className="block w-full text-center text-sm font-semibold px-5 py-3 rounded-full bg-charcoal-900 text-white">Sign Up</button>
+                            </div>
+                        </div>
+                    )}
+                </nav>
+            );
+        }
+
+        /* ──────────────────────────── HERO ───────────────────────────────────────── */
+        function Hero() {
+            return (
+                <section id="home" className="gradient-hero gradient-radial min-h-screen flex items-center relative overflow-hidden pt-24 pb-16">
+                    {/* Decorative blobs */}
+                    <div className="absolute top-20 left-10 w-72 h-72 bg-blush-200 rounded-full blur-3xl opacity-40 animate-pulse-slow" />
+                    <div className="absolute bottom-20 right-10 w-96 h-96 bg-beige-200 rounded-full blur-3xl opacity-50 animate-pulse-slow" style={{ animationDelay: '2s' }} />
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blush-100 rounded-full blur-3xl opacity-20" />
+
+                    <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-12 items-center relative z-10">
+                        {/* Text Side */}
+                        <div className="space-y-8 animate-fade-up">
+                            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass text-sm font-medium text-charcoal-700">
+                                <Icon name="Zap" size={14} className="text-blush-500" />
+                                <span>AI-Powered Fashion Intelligence</span>
+                            </div>
+
+                            <h1 className="font-display text-5xl sm:text-6xl lg:text-7xl font-bold leading-[1.08] tracking-tight">
+                                Discover Your <br />
+                                <span className="text-gradient">Perfect Style</span> <br />
+                                with AI
+                            </h1>
+
+                            <p className="text-lg text-charcoal-700/70 max-w-lg leading-relaxed">
+                                StyleSense uses advanced AI to curate personalised outfits, build a smarter wardrobe, and keep you effortlessly ahead of every trend.
+                            </p>
+
+                            <div className="flex flex-wrap gap-4">
+                                <a href="#pricing" className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-charcoal-900 text-white font-semibold text-sm shadow-xl shadow-charcoal-900/25 hover:shadow-blush-300/40 hover:bg-blush-400 hover:text-charcoal-900 transition-all duration-300">
+                                    Get Started Free <Icon name="ArrowRight" size={16} />
+                                </a>
+                                <a href="#how-it-works" className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full glass font-semibold text-sm text-charcoal-900 hover:bg-white/60 transition-all duration-300">
+                                    <Icon name="Play" size={16} /> See How It Works
+                                </a>
+                            </div>
+
+                            <div className="flex items-center gap-6 pt-2">
+                                <div className="flex -space-x-3">
+                                    {['🧑‍🎨', '👩‍💼', '🧑‍💻', '👩‍🎤'].map((e, i) => (
+                                        <div key={i} className="w-10 h-10 rounded-full bg-beige-100 border-2 border-white flex items-center justify-center text-lg shadow-md">{e}</div>
+                                    ))}
+                                </div>
+                                <div>
+                                    <div className="flex items-center gap-1 text-blush-500">
+                                        {[...Array(5)].map((_, i) => <Icon key={i} name="Star" size={14} />)}
+                                    </div>
+                                    <p className="text-xs text-charcoal-700/60 mt-0.5">Loved by <strong>50k+</strong> fashion enthusiasts</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Image Side */}
+                        <div className="relative flex justify-center animate-fade-up" style={{ animationDelay: '0.3s' }}>
+                            <div className="relative animate-float">
+                                <div className="absolute inset-0 bg-gradient-to-br from-blush-200 to-beige-200 rounded-3xl blur-2xl opacity-50 scale-95" />
+                                <img src="hero_illustration.png" alt="AI Stylist Illustration" className="relative w-full max-w-lg rounded-3xl shadow-2xl" />
+                            </div>
+
+                            {/* Floating badges */}
+                            <div className="absolute -left-4 top-1/4 glass rounded-2xl px-4 py-3 shadow-xl animate-float" style={{ animationDelay: '1s' }}>
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-xl bg-blush-100 flex items-center justify-center"><Icon name="Shirt" size={18} className="text-blush-500" /></div>
+                                    <div>
+                                        <p className="text-xs font-semibold">Smart Match</p>
+                                        <p className="text-[11px] text-charcoal-700/60">98% accuracy</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="absolute -right-4 bottom-1/4 glass rounded-2xl px-4 py-3 shadow-xl animate-float" style={{ animationDelay: '2s' }}>
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-xl bg-beige-200 flex items-center justify-center"><Icon name="TrendingUp" size={18} className="text-charcoal-900" /></div>
+                                    <div>
+                                        <p className="text-xs font-semibold">Trend Score</p>
+                                        <p className="text-[11px] text-charcoal-700/60">Always on point</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            );
+        }
+
+        /* ──────────────────────────── FEATURES ───────────────────────────────────── */
+        function Features() {
+            const [ref, vis] = useInView();
+            const feats = [
+                { icon: 'Shirt', title: 'Outfit Recommendations', desc: 'Get daily outfit suggestions curated by AI based on your style, weather, and calendar events.' },
+                { icon: 'LayoutGrid', title: 'Smart Wardrobe', desc: 'Digitise your closet and let AI organise, mix, and match pieces you never thought of.' },
+                { icon: 'TrendingUp', title: 'Trend Analysis', desc: 'Stay ahead with real-time trend tracking across runways, social media, and street style.' },
+                { icon: 'ScanLine', title: 'Body Type Matching', desc: 'AI analyses your measurements to suggest fits and silhouettes that flatter your shape.' },
+            ];
+
+            return (
+                <section id="features" className="py-28 relative">
+                    <div className="absolute inset-0 gradient-radial opacity-40" />
+                    <div ref={ref} className="max-w-7xl mx-auto px-6 relative z-10">
+                        <div className="text-center mb-16 space-y-4">
+                            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass text-sm font-medium text-charcoal-700 mx-auto">
+                                <Icon name="Layers" size={14} className="text-blush-500" /> Features
+                            </div>
+                            <h2 className="font-display text-4xl sm:text-5xl font-bold">
+                                Everything You Need to <span className="text-gradient">Look Amazing</span>
+                            </h2>
+                            <p className="text-charcoal-700/60 max-w-2xl mx-auto text-lg">Powered by cutting-edge AI to transform how you discover and wear fashion.</p>
+                        </div>
+
+                        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                            {feats.map((f, i) => (
+                                <div key={f.title} className={`glass rounded-3xl p-7 card-hover group ${vis ? 'intersection-animate visible' : 'intersection-animate'}`} style={{ transitionDelay: `${i * 0.12}s` }}>
+                                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blush-100 to-beige-200 flex items-center justify-center mb-5 group-hover:from-charcoal-900 group-hover:to-charcoal-800 transition-all duration-300">
+                                        <Icon name={f.icon} size={24} className="text-charcoal-900 group-hover:text-white transition-colors duration-300" />
+                                    </div>
+                                    <h3 className="font-display text-lg font-semibold mb-2">{f.title}</h3>
+                                    <p className="text-sm text-charcoal-700/60 leading-relaxed">{f.desc}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+            );
+        }
+
+        /* ─────────────────────── HOW IT WORKS ──────────────────────────────────── */
+        function HowItWorks() {
+            const [ref, vis] = useInView();
+            const steps = [
+                { icon: 'Camera', num: '01', title: 'Upload Your Style', desc: 'Snap photos of your wardrobe or let our AI scanner digitise pieces in seconds.' },
+                { icon: 'BrainCog', num: '02', title: 'AI Analyses & Learns', desc: 'Our algorithms map your preferences, body shape, and lifestyle to build a style profile.' },
+                { icon: 'Palette', num: '03', title: 'Get Styled Instantly', desc: 'Receive personalised outfit combos, shopping picks, and trend alerts daily.' },
+            ];
+
+            return (
+                <section id="how-it-works" className="py-28 bg-charcoal-900 relative overflow-hidden">
+                    <div className="absolute top-0 left-1/4 w-96 h-96 bg-blush-300 rounded-full blur-3xl opacity-10" />
+                    <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-beige-300 rounded-full blur-3xl opacity-10" />
+
+                    <div ref={ref} className="max-w-7xl mx-auto px-6 relative z-10">
+                        <div className="text-center mb-16 space-y-4">
+                            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-dark text-sm font-medium text-white/70 mx-auto">
+                                <Icon name="Workflow" size={14} className="text-blush-300" /> How It Works
+                            </div>
+                            <h2 className="font-display text-4xl sm:text-5xl font-bold text-white">
+                                Three Simple <span className="text-blush-300">Steps</span>
+                            </h2>
+                            <p className="text-white/50 max-w-2xl mx-auto text-lg">From closet to runway-ready in minutes.</p>
+                        </div>
+
+                        <div className="grid md:grid-cols-3 gap-8">
+                            {steps.map((s, i) => (
+                                <div key={s.num} className={`relative glass-dark rounded-3xl p-8 card-hover group ${vis ? 'intersection-animate visible' : 'intersection-animate'}`} style={{ transitionDelay: `${i * 0.15}s` }}>
+                                    {i < 2 && <div className="hidden md:block absolute top-1/2 -right-4 w-8 h-[2px] bg-gradient-to-r from-blush-300/60 to-transparent" />}
+                                    <span className="text-6xl font-display font-bold text-white/[0.05] absolute top-4 right-6">{s.num}</span>
+                                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blush-300/20 to-blush-400/10 flex items-center justify-center mb-6">
+                                        <Icon name={s.icon} size={24} className="text-blush-300" />
+                                    </div>
+                                    <h3 className="font-display text-xl font-semibold text-white mb-3">{s.title}</h3>
+                                    <p className="text-sm text-white/50 leading-relaxed">{s.desc}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+            );
+        }
+
+        /* ──────────────────────── TESTIMONIALS ─────────────────────────────────── */
+        function Testimonials() {
+            const [ref, vis] = useInView();
+            const reviews = [
+                { name: 'Sophia Chen', role: 'Fashion Blogger', avatar: '👩‍🎤', quote: 'StyleSense completely changed my daily outfit routine. The AI recommendations are scarily accurate — it knows my taste better than I do!', stars: 5 },
+                { name: 'James Okoro', role: 'Creative Director', avatar: '🧑‍💼', quote: 'As someone who dreads shopping, this app is a lifesaver. The smart wardrobe feature alone is worth every penny.', stars: 5 },
+                { name: 'Aisha Patel', role: 'Startup Founder', avatar: '👩‍💻', quote: 'I\'ve tried dozens of style apps. StyleSense is the only one that truly understands body type matching. Absolutely brilliant.', stars: 5 },
+            ];
+
+            return (
+                <section className="py-28 relative">
+                    <div className="absolute inset-0 gradient-radial opacity-30" />
+                    <div ref={ref} className="max-w-7xl mx-auto px-6 relative z-10">
+                        <div className="text-center mb-16 space-y-4">
+                            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass text-sm font-medium text-charcoal-700 mx-auto">
+                                <Icon name="MessageCircle" size={14} className="text-blush-500" /> Testimonials
+                            </div>
+                            <h2 className="font-display text-4xl sm:text-5xl font-bold">
+                                What Our <span className="text-gradient">Users Say</span>
+                            </h2>
+                        </div>
+
+                        <div className="grid md:grid-cols-3 gap-7">
+                            {reviews.map((r, i) => (
+                                <div key={r.name} className={`glass rounded-3xl p-8 card-hover ${vis ? 'intersection-animate visible' : 'intersection-animate'}`} style={{ transitionDelay: `${i * 0.12}s` }}>
+                                    <div className="flex items-center gap-1 text-blush-400 mb-5">
+                                        {[...Array(r.stars)].map((_, j) => <Icon key={j} name="Star" size={16} />)}
+                                    </div>
+                                    <p className="text-charcoal-700/70 leading-relaxed mb-6 italic">"{r.quote}"</p>
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-12 h-12 rounded-full bg-beige-100 flex items-center justify-center text-2xl shadow-md">{r.avatar}</div>
+                                        <div>
+                                            <p className="font-semibold text-sm">{r.name}</p>
+                                            <p className="text-xs text-charcoal-700/50">{r.role}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+            );
+        }
+
+        /* ──────────────────────────── PRICING ──────────────────────────────────── */
+        function Pricing() {
+            const [ref, vis] = useInView();
+            const plans = [
+                {
+                    name: 'Free', price: '₹0', period: 'forever', desc: 'Get started with the basics.',
+                    features: ['5 outfit suggestions/day', 'Basic wardrobe scan', 'Community trends feed', 'Limited body analysis'],
+                    cta: 'Start Free', popular: false, dark: false,
+                },
+                {
+                    name: 'Pro', price: '₹799', period: '/mo', desc: 'Your personal AI stylist.',
+                    features: ['Unlimited suggestions', 'Smart wardrobe management', 'Real-time trend alerts', 'Advanced body matching', 'Shopping assistant', 'Priority support'],
+                    cta: 'Go Pro', popular: true, dark: true,
+                },
+                {
+                    name: 'Max', price: '₹1,999', period: '/mo', desc: 'The ultimate fashion experience.',
+                    features: ['Everything in Pro', '1-on-1 AI stylist sessions', 'Personal colour analysis', 'Exclusive runway previews', 'Brand partnerships access', 'VIP concierge support'],
+                    cta: 'Go Max', popular: false, dark: false,
+                },
+            ];
+
+            return (
+                <section id="pricing" className="py-28 relative">
+                    <div className="absolute inset-0 gradient-radial opacity-30" />
+                    <div ref={ref} className="max-w-7xl mx-auto px-6 relative z-10">
+                        <div className="text-center mb-16 space-y-4">
+                            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass text-sm font-medium text-charcoal-700 mx-auto">
+                                <Icon name="CreditCard" size={14} className="text-blush-500" /> Pricing
+                            </div>
+                            <h2 className="font-display text-4xl sm:text-5xl font-bold">
+                                Find Your Perfect <span className="text-gradient">Plan</span>
+                            </h2>
+                            <p className="text-charcoal-700/60 max-w-2xl mx-auto text-lg">Start free. Upgrade when you're ready.</p>
+                        </div>
+
+                        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {plans.map((p, i) => (
+                                <div key={p.name}
+                                    className={`rounded-3xl p-7 card-hover relative flex flex-col ${p.dark ? 'bg-charcoal-900 text-white' : 'glass'} ${p.popular ? 'pricing-popular' : ''} ${vis ? 'intersection-animate visible' : 'intersection-animate'}`}
+                                    style={{ transitionDelay: `${i * 0.1}s` }}
+                                >
+                                    {p.popular && (
+                                        <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-blush-300 text-charcoal-900 text-xs font-bold shadow-lg">
+                                            Most Popular
+                                        </div>
+                                    )}
+                                    <div className="mb-5">
+                                        <h3 className="font-display text-lg font-semibold">{p.name}</h3>
+                                        <p className={`text-xs mt-1 ${p.dark ? 'text-white/50' : 'text-charcoal-700/50'}`}>{p.desc}</p>
+                                    </div>
+                                    <div className="flex items-baseline gap-1 mb-6">
+                                        <span className="font-display text-4xl font-bold">{p.price}</span>
+                                        <span className={`text-sm ${p.dark ? 'text-white/40' : 'text-charcoal-700/40'}`}>{p.period}</span>
+                                    </div>
+                                    <ul className="space-y-3 mb-8 flex-1">
+                                        {p.features.map(f => (
+                                            <li key={f} className="flex items-start gap-2.5 text-sm">
+                                                <Icon name="Check" size={16} className={`shrink-0 mt-0.5 ${p.dark ? 'text-blush-300' : 'text-blush-500'}`} />
+                                                <span className={p.dark ? 'text-white/70' : 'text-charcoal-700/70'}>{f}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                    <a href="#"
+                                        className={`block text-center text-sm font-semibold px-5 py-3 rounded-full transition-all duration-300 ${p.dark
+                                            ? 'bg-white text-charcoal-900 hover:bg-blush-200 shadow-lg'
+                                            : 'bg-charcoal-900 text-white hover:bg-blush-400 hover:text-charcoal-900 shadow-lg shadow-charcoal-900/20'
+                                            }`}
+                                    >
+                                        {p.cta}
+                                    </a>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+            );
+        }
+
+        /* ──────────────────────────── FOOTER ─────────────────────────────────────── */
+        function Footer() {
+            const cols = [
+                { title: 'Product', links: ['Features', 'Pricing', 'Integrations', 'Changelog'] },
+                { title: 'Company', links: ['About', 'Careers', 'Blog', 'Press'] },
+                { title: 'Support', links: ['Help Centre', 'Contact', 'Privacy', 'Terms'] },
+            ];
+            const socials = ['Instagram', 'Twitter', 'Figma', 'Github'];
+
+            return (
+                <footer className="bg-charcoal-900 text-white pt-20 pb-8 relative overflow-hidden">
+                    <div className="absolute top-0 left-1/3 w-96 h-96 bg-blush-300 rounded-full blur-3xl opacity-[0.04]" />
+                    <div className="max-w-7xl mx-auto px-6">
+                        <div className="grid md:grid-cols-5 gap-12 mb-16">
+                            {/* Brand */}
+                            <div className="md:col-span-2 space-y-5">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-9 h-9 rounded-xl bg-blush-300 flex items-center justify-center">
+                                        <Icon name="Sparkles" size={18} className="text-charcoal-900" />
+                                    </div>
+                                    <span className="font-display text-xl font-bold">StyleSense</span>
+                                </div>
+                                <p className="text-sm text-white/40 leading-relaxed max-w-xs">Your AI-powered fashion companion. Discover, style, and express your unique look effortlessly.</p>
+                                {/* Newsletter */}
+                                <div className="flex gap-2 max-w-sm">
+                                    <input type="email" placeholder="Enter your email" className="flex-1 px-4 py-2.5 rounded-full bg-white/10 border border-white/10 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-blush-300/50 transition-colors" />
+                                    <button className="px-5 py-2.5 rounded-full bg-blush-300 text-charcoal-900 text-sm font-semibold hover:bg-blush-200 transition-colors">
+                                        Subscribe
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Link Columns */}
+                            {cols.map(c => (
+                                <div key={c.title}>
+                                    <h4 className="font-semibold text-sm mb-4 text-white/70">{c.title}</h4>
+                                    <ul className="space-y-3">
+                                        {c.links.map(l => (
+                                            <li key={l}><a href="#" className="text-sm text-white/40 hover:text-blush-300 transition-colors">{l}</a></li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            ))}
+                        </div>
+
+                        <hr className="border-white/10 mb-8" />
+
+                        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                            <p className="text-xs text-white/30">© 2026 StyleSense. All rights reserved.</p>
+                            <div className="flex items-center gap-4">
+                                {socials.map(s => (
+                                    <a key={s} href="#" className="w-9 h-9 rounded-full bg-white/5 flex items-center justify-center hover:bg-blush-300/20 transition-colors" aria-label={s}>
+                                        <Icon name={s} size={16} className="text-white/50 hover:text-blush-300" />
+                                    </a>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </footer>
+            );
+        }
+
+        /* ──────────────────────── AUTH MODALS ──────────────────────────────────── */
+        function AuthModals({ modal, setModal }) {
+            const [step, setStep] = useState('form'); // form | otp | complete
+            const [loading, setLoading] = useState(false);
+            const [error, setError] = useState('');
+            const [success, setSuccess] = useState('');
+
+            // Signup fields
+            const [name, setName] = useState('');
+            const [email, setEmail] = useState('');
+            const [otp, setOtp] = useState('');
+            const [password, setPassword] = useState('');
+            const [confirmPassword, setConfirmPassword] = useState('');
+
+            // Login fields
+            const [loginEmail, setLoginEmail] = useState('');
+            const [loginPassword, setLoginPassword] = useState('');
+
+            const reset = () => { setStep('form'); setError(''); setSuccess(''); setName(''); setEmail(''); setOtp(''); setPassword(''); setConfirmPassword(''); setLoginEmail(''); setLoginPassword(''); setLoading(false); };
+            const close = () => { reset(); setModal(null); };
+            const switchModal = (to) => { reset(); setModal(to); };
+
+            // ── Signup submit ──
+            const handleSignup = async (e) => {
+                e.preventDefault();
+                setError(''); setLoading(true);
+                try {
+                    const res = await fetch('/api/signup', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, email }) });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error);
+                    setSuccess('OTP sent to ' + email);
+                    setStep('otp');
+                } catch (err) { setError(err.message); }
+                setLoading(false);
+            };
+
+            // ── Verify OTP ──
+            const handleVerifyOtp = async (e) => {
+                e.preventDefault();
+                setError('');
+                if (password !== confirmPassword) { setError('Passwords do not match'); return; }
+                if (password.length < 6) { setError('Password must be at least 6 characters'); return; }
+                setLoading(true);
+                try {
+                    const res = await fetch('/api/verify-otp', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, otp, password }) });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error);
+                    setSuccess('Account created! Redirecting...');
+                    setStep('complete');
+                    setTimeout(() => { window.location.href = '/dashboard'; }, 1500);
+                } catch (err) { setError(err.message); }
+                setLoading(false);
+            };
+
+            // ── Resend OTP ──
+            const handleResend = async () => {
+                setError(''); setLoading(true);
+                try {
+                    const res = await fetch('/api/resend-otp', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error);
+                    setSuccess('New OTP sent!');
+                } catch (err) { setError(err.message); }
+                setLoading(false);
+            };
+
+            // ── Login submit ──
+            const handleLogin = async (e) => {
+                e.preventDefault();
+                setError(''); setLoading(true);
+                try {
+                    const res = await fetch('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: loginEmail, password: loginPassword }) });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error);
+                    setSuccess('Login successful! Redirecting...');
+                    setTimeout(() => { window.location.href = '/dashboard'; }, 1000);
+                } catch (err) { setError(err.message); }
+                setLoading(false);
+            };
+
+            if (!modal) return null;
+
+            const inputCls = 'w-full px-4 py-3 rounded-xl bg-white border border-beige-200 text-sm text-charcoal-900 placeholder:text-charcoal-600/40 focus:outline-none focus:ring-2 focus:ring-blush-300 focus:border-transparent transition-all';
+            const btnCls = 'w-full py-3 rounded-xl font-semibold text-sm transition-all duration-300 disabled:opacity-50';
+
+            return (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" onClick={close}>
+                    <div className="absolute inset-0 bg-charcoal-900/60 backdrop-blur-sm" />
+                    <div className="relative w-full max-w-md glass rounded-3xl shadow-2xl p-8 animate-fade-up" onClick={e => e.stopPropagation()}>
+                        {/* Close */}
+                        <button onClick={close} className="absolute top-4 right-4 p-1.5 rounded-lg hover:bg-beige-200 transition-colors">
+                            <Icon name="X" size={18} className="text-charcoal-700" />
+                        </button>
+
+                        {/* Header */}
+                        <div className="text-center mb-6">
+                            <div className="w-12 h-12 rounded-2xl bg-charcoal-900 flex items-center justify-center mx-auto mb-4">
+                                <Icon name="Sparkles" size={22} className="text-white" />
+                            </div>
+                            <h2 className="font-display text-2xl font-bold">
+                                {modal === 'login' ? 'Welcome Back' : step === 'otp' ? 'Verify Email' : step === 'complete' ? 'All Set!' : 'Create Account'}
+                            </h2>
+                            <p className="text-sm text-charcoal-700/60 mt-1">
+                                {modal === 'login' ? 'Log in to your StyleSense account' : step === 'otp' ? `We sent a 6-digit code to ${email}` : step === 'complete' ? 'Your account is ready' : 'Start your AI-powered style journey'}
+                            </p>
+                        </div>
+
+                        {/* Error / Success */}
+                        {error && <div className="mb-4 px-4 py-2.5 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm flex items-center gap-2"><Icon name="AlertCircle" size={16} />{error}</div>}
+                        {success && <div className="mb-4 px-4 py-2.5 rounded-xl bg-green-50 border border-green-200 text-green-700 text-sm flex items-center gap-2"><Icon name="CheckCircle" size={16} />{success}</div>}
+
+                        {/* ── LOGIN FORM ── */}
+                        {modal === 'login' && (
+                            <form onSubmit={handleLogin} className="space-y-4">
+                                <div>
+                                    <label className="block text-xs font-semibold text-charcoal-700 mb-1.5">Email</label>
+                                    <input type="email" required value={loginEmail} onChange={e => setLoginEmail(e.target.value)} placeholder="you@example.com" className={inputCls} />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-semibold text-charcoal-700 mb-1.5">Password</label>
+                                    <input type="password" required value={loginPassword} onChange={e => setLoginPassword(e.target.value)} placeholder="Enter your password" className={inputCls} />
+                                </div>
+                                <button type="submit" disabled={loading} className={`${btnCls} bg-charcoal-900 text-white hover:bg-blush-400 hover:text-charcoal-900 shadow-lg`}>
+                                    {loading ? 'Signing in...' : 'Sign In'}
+                                </button>
+                                <p className="text-center text-sm text-charcoal-700/60">
+                                    Don't have an account? <button type="button" onClick={() => switchModal('signup')} className="font-semibold text-blush-500 hover:underline">Sign Up</button>
+                                </p>
+                            </form>
+                        )}
+
+                        {/* ── SIGNUP FORM ── */}
+                        {modal === 'signup' && step === 'form' && (
+                            <form onSubmit={handleSignup} className="space-y-4">
+                                <div>
+                                    <label className="block text-xs font-semibold text-charcoal-700 mb-1.5">Full Name</label>
+                                    <input type="text" required value={name} onChange={e => setName(e.target.value)} placeholder="John Doe" className={inputCls} />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-semibold text-charcoal-700 mb-1.5">Email</label>
+                                    <input type="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" className={inputCls} />
+                                </div>
+                                <button type="submit" disabled={loading} className={`${btnCls} bg-charcoal-900 text-white hover:bg-blush-400 hover:text-charcoal-900 shadow-lg`}>
+                                    {loading ? 'Sending OTP...' : 'Send Verification Code'}
+                                </button>
+                                <p className="text-center text-sm text-charcoal-700/60">
+                                    Already have an account? <button type="button" onClick={() => switchModal('login')} className="font-semibold text-blush-500 hover:underline">Log In</button>
+                                </p>
+                            </form>
+                        )}
+
+                        {/* ── OTP + PASSWORD STEP ── */}
+                        {modal === 'signup' && step === 'otp' && (
+                            <form onSubmit={handleVerifyOtp} className="space-y-4">
+                                <div>
+                                    <label className="block text-xs font-semibold text-charcoal-700 mb-1.5">Verification Code</label>
+                                    <input type="text" required maxLength={6} value={otp} onChange={e => setOtp(e.target.value.replace(/\D/g, ''))} placeholder="Enter 6-digit OTP" className={`${inputCls} text-center text-xl tracking-[0.4em] font-bold`} />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-semibold text-charcoal-700 mb-1.5">Create Password</label>
+                                    <input type="password" required value={password} onChange={e => setPassword(e.target.value)} placeholder="Min. 6 characters" className={inputCls} />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-semibold text-charcoal-700 mb-1.5">Confirm Password</label>
+                                    <input type="password" required value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} placeholder="Re-enter password" className={inputCls} />
+                                </div>
+                                <button type="submit" disabled={loading} className={`${btnCls} bg-charcoal-900 text-white hover:bg-blush-400 hover:text-charcoal-900 shadow-lg`}>
+                                    {loading ? 'Verifying...' : 'Verify & Create Account'}
+                                </button>
+                                <p className="text-center text-xs text-charcoal-700/50">
+                                    Didn't get the code? <button type="button" onClick={handleResend} disabled={loading} className="font-semibold text-blush-500 hover:underline">Resend OTP</button>
+                                </p>
+                            </form>
+                        )}
+
+                        {/* ── COMPLETE ── */}
+                        {modal === 'signup' && step === 'complete' && (
+                            <div className="text-center py-4">
+                                <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
+                                    <Icon name="CheckCircle" size={32} className="text-green-600" />
+                                </div>
+                                <p className="text-charcoal-700/60">Taking you to your dashboard...</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        }
+
+        /* ──────────────────────────── APP ────────────────────────────────────────── */
+        function App() {
+            const [modal, setModal] = useState(null); // null | 'login' | 'signup'
+            return (
+                <>
+                    <Navbar onLogin={() => setModal('login')} onSignup={() => setModal('signup')} />
+                    <Hero />
+                    <Features />
+                    <HowItWorks />
+                    <Testimonials />
+                    <Pricing />
+                    <Footer />
+                    <AuthModals modal={modal} setModal={setModal} />
+                </>
+            );
+        }
+
+        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+    </script>
+</body>
+
+</html>
